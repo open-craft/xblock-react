@@ -1,0 +1,9 @@
+/* CSS for ReactXBlock8 */
+
+.react_xblock_2_block .count {
+    font-weight: bold;
+}
+
+.react_xblock_2_block p {
+    cursor: pointer;
+}

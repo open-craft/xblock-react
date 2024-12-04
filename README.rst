@@ -1,17 +1,28 @@
 React XBlock Demo
 #################
 
-Testing with Docker
+Developing with Tutor
 *******************
 
-This XBlock comes with a Docker test environment ready to build, based on the xblock-sdk workbench.
-To build and run it:
+The recommended way to test and develop this XBlock is to install it into a Tutor devstack:
 
 .. code-block:: bash
 
-    make dev.run
+    tutor mounts add .
+    tutor images build openedx-dev
 
-The XBlock SDK Workbench, including this XBlock, will be available on the list of XBlocks at http://localhost:8000
+Then you can go to http://studio.local.openedx.io:8001/ , add ``react_xblock_6``
+to a course's "Advanced module list", then add this block to a course and test
+it there. When you make changes to the code, Studio will automatically reload.
+
+If the XBlock is not appearing, you may need to run this command and then
+restart the CMS+LMS containers. At the moment, it's unclear why this is
+necessary, but it seems that the install that happens during the image build is
+not properly creating the egg info and entry point.
+
+.. code-block:: bash
+
+    tutor dev exec cms pip install -e /mnt/xblock-react-5/
 
 Translating
 ***********

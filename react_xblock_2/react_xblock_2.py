@@ -68,24 +68,6 @@ class ReactXBlock8(XBlock):
         self.count += 1
         return {"count": self.count}
 
-    # TO-DO: change this to create the scenarios you'd like to see in the
-    # workbench while developing your XBlock.
-    @staticmethod
-    def workbench_scenarios():
-        """Create canned scenario for display in the workbench."""
-        return [
-            ("ReactXBlock8",
-             """<react_xblock_6/>
-             """),
-            ("Multiple ReactXBlock8",
-             """<vertical_demo>
-                <react_xblock_6/>
-                <react_xblock_6/>
-                <react_xblock_6/>
-                </vertical_demo>
-             """),
-        ]
-
     @staticmethod
     def _get_statici18n_js_url():
         """

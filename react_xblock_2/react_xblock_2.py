@@ -1,7 +1,7 @@
 """TO-DO: Write a description of what this XBlock is."""
 
 import os
-from importlib import resources
+import importlib
 
 from django.utils import translation
 from web_fragments.fragment import Fragment
@@ -96,11 +96,12 @@ class ReactXBlock8(XBlock):
         locale_code = translation.get_language()
         if locale_code is None:
             return None
+        package_name = importlib.import_module(resource_loader.module_name).__package__
         text_js = 'static/js/translations/{locale_code}/text.js'
         lang_code = locale_code.split('-')[0]
         for code in (locale_code, lang_code, 'en'):
             text_js_path = text_js.format(locale_code=code)
-            if resources.files(resource_loader.module_name).joinpath(text_js_path).is_file():
+            if importlib.resources.files(package_name).joinpath(text_js_path).is_file():
                 return text_js_path
         return None
 

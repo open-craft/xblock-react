@@ -1,0 +1,21 @@
+{
+    "name": "xblock-react-5-js",
+    "type": "module",
+    "devDependencies": {
+        "@openedx/paragon": "^22.10",
+        "@rollup/plugin-commonjs": "^28.0.1",
+        "@rollup/plugin-node-resolve": "^15.3.0",
+        "@rollup/plugin-replace": "^6.0.1",
+        "@rollup/plugin-typescript": "^12.1.1",
+        "@types/react": "^17",
+        "@types/react-dom": "^17",
+        "react": "^17",
+        "react-dom": "^17",
+        "rollup": "^4.28.0",
+        "typescript": "5.7.2"
+    },
+    "scripts": {
+        "build": "rollup -c rollup.config.js",
+        "watch": "rollup -c rollup.config.js --watch"
+    }
+}

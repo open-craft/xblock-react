@@ -5,6 +5,9 @@ __pycache__
 # C extensions
 *.so
 
+# JavaScript modules
+node_modules/
+
 # Packages
 *.egg
 *.egg-info

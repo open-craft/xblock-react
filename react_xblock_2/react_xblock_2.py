@@ -49,8 +49,9 @@ class ReactXBlock8(XBlock):
         if statici18n_js_url:
             frag.add_javascript_url(self.runtime.local_resource_url(self, statici18n_js_url))
 
-        frag.add_javascript(self.resource_string("js/src/react_xblock_2.js"))
-        frag.initialize_js('ReactXBlock8')
+        js_entry_point = self.runtime.local_resource_url(self, 'public/js/react_xblock_2.js')
+        frag.add_javascript_url(js_entry_point)
+        frag.initialize_js('initReactXBlock8StudentView')
         return frag
 
     # TO-DO: change this handler to perform your own actions.  You may need more

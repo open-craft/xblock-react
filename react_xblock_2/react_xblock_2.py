@@ -1,9 +1,6 @@
 """TO-DO: Write a description of what this XBlock is."""
-
 import os
-import importlib
 
-from django.utils import translation
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock
 from xblock.fields import Integer, Scope
@@ -42,12 +39,6 @@ class ReactXBlock8(XBlock):
         # this is mostly to load our React JavaScript bundle and i18n.
         frag = Fragment('<p>Loading...</p>')
         frag.add_css(self.resource_string("css/react_xblock_2.css"))
-
-        # Add i18n js
-        statici18n_js_url = self._get_statici18n_js_url()
-        if statici18n_js_url:
-            frag.add_javascript_url(self.runtime.local_resource_url(self, statici18n_js_url))
-
         # Add JavaScript:
         js_entry_point = self.runtime.local_resource_url(self, 'public/js/react_xblock_2.js')
         frag.add_javascript_url(js_entry_point)
@@ -71,29 +62,3 @@ class ReactXBlock8(XBlock):
 
         self.count += 1
         return {"count": self.count}
-
-    @staticmethod
-    def _get_statici18n_js_url():
-        """
-        Return the Javascript translation file for the currently selected language, if any.
-
-        Defaults to English if available.
-        """
-        locale_code = translation.get_language()
-        if locale_code is None:
-            return None
-        package_name = importlib.import_module(resource_loader.module_name).__package__
-        text_js = 'static/js/translations/{locale_code}/text.js'
-        lang_code = locale_code.split('-')[0]
-        for code in (locale_code, lang_code, 'en'):
-            text_js_path = text_js.format(locale_code=code)
-            if importlib.resources.files(package_name).joinpath(text_js_path).is_file():
-                return text_js_path
-        return None
-
-    @staticmethod
-    def get_dummy():
-        """
-        Generate initial i18n with dummy method.
-        """
-        return translation.gettext_noop('Dummy')

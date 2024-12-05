@@ -1,0 +1,9 @@
+{
+  "61Tkpq": {
+    "defaultMessage": "{count, plural, one {The button has been clicked <bold>1</bold> time.} other {The button has been clicked <bold>{count, number}</bold> times.} }",
+    "description": "Sentence describing how many times the button has been clicked."
+  },
+  "tQLRmz": {
+    "defaultMessage": "Increment"
+  }
+}

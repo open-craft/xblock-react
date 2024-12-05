@@ -33,7 +33,45 @@ export interface JQueryWrappedDiv {
   jquery: string;
 }
 
-export function getAjaxHeaders(): Record<string, any> {
-  const csrfToken = document.cookie.split("; ").find((row) => row.startsWith("csrftoken="))?.split("=")[1];
-  return {'X-CSRFToken': csrfToken};
+export function getCsrfToken(): string {
+  return document.cookie.split("; ").find((row) => row.startsWith("csrftoken="))?.split("=")[1] ?? 'unknown CSRF!';
+}
+
+/** Wraps the XBlock runtime to make it easier to use */
+export class BoundRuntime {
+  constructor(
+    public readonly runtime: XBlockRuntime,
+    public readonly element: HTMLDivElement
+  ) {}
+
+  /** GET data from a JSON handler */
+  async getHandler<Data extends Record<string, any> = Record<string, any>>(handlerName: string): Promise<Data> {
+    const response = await this.rawHandler(handlerName, { method: 'GET' });
+    return response.json();
+  }
+
+  /** POST data to a JSON handler */
+  async postHandler<Data extends Record<string, any> = Record<string, any>>(
+    handlerName: string,
+    data: Record<string, any>,
+  ): Promise<Data> {
+    const response = await this.rawHandler(handlerName, { method: 'POST', body: JSON.stringify(data) });
+    return response.json();
+  }
+
+  /** Call an XBlock handler */
+  rawHandler(handlerName: string, init: RequestInit, suffix?: string, query?: string): Promise<Response> {
+    const url = this.runtime.handlerUrl(this.element, handlerName, suffix, query);
+    let { headers, ...otherInit } = init;
+    headers = new Headers(headers); // Wrap headers into a Headers object if not already
+    if (init.method !== 'GET') {
+      headers.set('X-CSRFToken', getCsrfToken());
+    }
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    return fetch(url, { headers, ...otherInit });
+  }
+
+  // To access other methods like children(), notify(), etc. use the .runtime property
 }

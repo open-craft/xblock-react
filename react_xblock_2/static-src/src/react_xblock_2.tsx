@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 // 🛑 line below "Things that don't have types"), or don't use Paragon.       🛑
 // 🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑
 import { Button } from '@openedx/paragon';
-import { getAjaxHeaders, type JQueryWrappedDiv, type XBlockRuntime } from './xblock-utils';
+import { BoundRuntime, type JQueryWrappedDiv, type XBlockRuntime } from './xblock-utils';
 
 /** Data passed from our student_view render method when it calls frag.initialize_js() */
 interface InitData {
@@ -19,27 +19,21 @@ interface InitData {
 }
 
 interface Props {
-  rootElement: HTMLDivElement;
-  runtime: XBlockRuntime;
+  runtime: BoundRuntime;
   initialCount: number;
 }
 
-const StudentView: React.FC<Props> = (props) => {
+const StudentView: React.FC<Props> = ({ runtime, ...props }) => {
   const [count, setCount] = React.useState(props.initialCount);
 
   // Handlers:
-  const incrementCountUrl = React.useMemo(
-    () => props.runtime.handlerUrl(props.rootElement, 'increment_count'),
-    [], // Should never change (neither runtime nor rootElement will ever change)
-  );
   const increment = React.useCallback(async () => {
-    const response = await fetch(incrementCountUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAjaxHeaders() },
-      body: JSON.stringify({ hello: 'world' }),
-    });
-    setCount((await response.json()).count);
-  }, [incrementCountUrl]);
+    interface IncrementResponse { count: number; }
+    const newData = await runtime.postHandler<IncrementResponse>('increment_count', { hello: 'world' });
+    setCount(newData.count);
+  }, [runtime]);
+
+  // Note: for more sophisticated fetch/cache/mutate behavior, use @tanstack/react-query to manage your data.
 
   return <div className="react_xblock_2_block">
       <p>ReactXBlock8: count is now <span className="count">{count}</span>.</p>
@@ -54,9 +48,12 @@ function initStudentView(runtime: XBlockRuntime, container: HTMLDivElement | JQu
   }
   // Paragon doesn't yet support React 18:
   //   const root = createRoot(container!);
-  //   root.render(<StudentView runtime={runtime} rootElement={container} />);
+  //   root.render(<StudentView runtime={new BoundRuntime(runtime, container)} initialCount={initData.count} />);
   // So use the deprecated React 17 API:
-  ReactDOM.render(<StudentView runtime={runtime} rootElement={container} initialCount={initData.count} />, container);
+  ReactDOM.render(
+    <StudentView runtime={new BoundRuntime(runtime, container)} initialCount={initData.count} />,
+    container
+  );
 }
 
 // Thanks to rollup's output.name setting, this will become 'initReactXBlock8StudentView' in the global scope

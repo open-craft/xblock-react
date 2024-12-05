@@ -1493,23 +1493,49 @@ var initReactXBlock8StudentView = (function () {
 	// information so we need to include it.
 	//
 	// 🛑 As an XBlock author, you probably should NOT edit this file. 🛑
-	function getAjaxHeaders() {
-	    const csrfToken = document.cookie.split("; ").find((row) => row.startsWith("csrftoken="))?.split("=")[1];
-	    return { 'X-CSRFToken': csrfToken };
+	function getCsrfToken() {
+	    return document.cookie.split("; ").find((row) => row.startsWith("csrftoken="))?.split("=")[1] ?? 'unknown CSRF!';
+	}
+	/** Wraps the XBlock runtime to make it easier to use */
+	class BoundRuntime {
+	    runtime;
+	    element;
+	    constructor(runtime, element) {
+	        this.runtime = runtime;
+	        this.element = element;
+	    }
+	    /** GET data from a JSON handler */
+	    async getHandler(handlerName) {
+	        const response = await this.rawHandler(handlerName, { method: 'GET' });
+	        return response.json();
+	    }
+	    /** POST data to a JSON handler */
+	    async postHandler(handlerName, data) {
+	        const response = await this.rawHandler(handlerName, { method: 'POST', body: JSON.stringify(data) });
+	        return response.json();
+	    }
+	    /** Call an XBlock handler */
+	    rawHandler(handlerName, init, suffix, query) {
+	        const url = this.runtime.handlerUrl(this.element, handlerName, suffix, query);
+	        let { headers, ...otherInit } = init;
+	        headers = new Headers(headers); // Wrap headers into a Headers object if not already
+	        if (init.method !== 'GET') {
+	            headers.set('X-CSRFToken', getCsrfToken());
+	        }
+	        if (!headers.has('Content-Type')) {
+	            headers.set('Content-Type', 'application/json');
+	        }
+	        return fetch(url, { headers, ...otherInit });
+	    }
 	}
 
-	const StudentView = (props) => {
+	const StudentView = ({ runtime, ...props }) => {
 	    const [count, setCount] = React.useState(props.initialCount);
 	    // Handlers:
-	    const incrementCountUrl = React.useMemo(() => props.runtime.handlerUrl(props.rootElement, 'increment_count'), []);
 	    const increment = React.useCallback(async () => {
-	        const response = await fetch(incrementCountUrl, {
-	            method: 'POST',
-	            headers: { 'Content-Type': 'application/json', ...getAjaxHeaders() },
-	            body: JSON.stringify({ hello: 'world' }),
-	        });
-	        setCount((await response.json()).count);
-	    }, [incrementCountUrl]);
+	        const newData = await runtime.postHandler('increment_count', { hello: 'world' });
+	        setCount(newData.count);
+	    }, [runtime]);
 	    return jsxRuntimeExports.jsxs("div", { className: "react_xblock_2_block", children: [jsxRuntimeExports.jsxs("p", { children: ["ReactXBlock8: count is now ", jsxRuntimeExports.jsx("span", { className: "count", children: count }), "."] }), jsxRuntimeExports.jsx(Button, { onClick: increment, children: "+ Increment" })] });
 	};
 	function initStudentView(runtime, container, initData) {
@@ -1519,9 +1545,9 @@ var initReactXBlock8StudentView = (function () {
 	    }
 	    // Paragon doesn't yet support React 18:
 	    //   const root = createRoot(container!);
-	    //   root.render(<StudentView runtime={runtime} rootElement={container} />);
+	    //   root.render(<StudentView runtime={new BoundRuntime(runtime, container)} initialCount={initData.count} />);
 	    // So use the deprecated React 17 API:
-	    ReactDOM.render(jsxRuntimeExports.jsx(StudentView, { runtime: runtime, rootElement: container, initialCount: initData.count }), container);
+	    ReactDOM.render(jsxRuntimeExports.jsx(StudentView, { runtime: new BoundRuntime(runtime, container), initialCount: initData.count }), container);
 	}
 
 	return initStudentView;

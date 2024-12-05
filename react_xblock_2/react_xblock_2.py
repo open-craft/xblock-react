@@ -3,7 +3,7 @@ import os
 
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock
-from xblock.fields import Integer, Scope
+from xblock.fields import Integer, Scope, String
 from xblock.utils.resources import ResourceLoader
 
 resource_loader = ResourceLoader(__name__)
@@ -21,6 +21,12 @@ class ReactXBlock8(XBlock):
     count = Integer(
         default=0, scope=Scope.user_state,
         help="A simple counter, to show something happening",
+    )
+
+    display_name = String(
+        display_name="Display Name",
+        scope=Scope.settings,
+        default="ReactXBlock8",
     )
 
     def resource_string(self, path):
@@ -48,17 +54,43 @@ class ReactXBlock8(XBlock):
         })
         return frag
 
+    # TO-DO: change this view to display your data your own way.
+    def studio_view(self, context=None):
+        """
+        UI where authors can edit the settings of this block.
+        """
+        # Create our HTML fragment. The HTML will get replace by React, so
+        # this is mostly to load our React JavaScript bundle and i18n.
+        frag = Fragment('<p>Loading...</p>')
+        frag.add_css(self.resource_string("css/react_xblock_2.css"))
+        # Add JavaScript:
+        js_entry_point = self.runtime.local_resource_url(self, 'public/js/react_xblock_2_studio.js')
+        frag.add_javascript_url(js_entry_point)
+        frag.initialize_js('initReactXBlock8StudioView', {
+            # Pass all fields to the studio edit UI. This is safe for authors, but we wouldn't do this for learners
+            # (in student_view) because these fields could contain answers etc.
+            "fields": {
+                field_name: self.fields[field_name].to_json(getattr(self, field_name))
+                for field_name in self.fields.keys()
+            }
+        })
+        return frag
+
     # TO-DO: change this handler to perform your own actions.  You may need more
     # than one handler, or you may not need any handlers at all.
     @XBlock.json_handler
-    def increment_count(self, data, suffix=''):
+    def increment_count(self, _data, _suffix=''):
         """
         Increments data. An example handler.
         """
-        if suffix:
-            pass  # TO-DO: Use the suffix when storing data.
-        # Just to show data coming in...
-        assert data['hello'] == 'world'
-
         self.count += 1
         return {"count": self.count}
+
+    @XBlock.json_handler
+    def save_authored_data(self, data, suffix=''):
+        """
+        Handler for saving changes that an author made using the studio_view
+        """
+        if "display_name" in data:
+            self.display_name = data['display_name']
+        return {}

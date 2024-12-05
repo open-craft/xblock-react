@@ -30,7 +30,7 @@ const StudentView: React.FC<Props> = ({ runtime, ...props }) => {
   // Handlers:
   const increment = React.useCallback(async () => {
     interface IncrementResponse { count: number; }
-    const newData = await runtime.postHandler<IncrementResponse>('increment_count', { hello: 'world' });
+    const newData = await runtime.postHandler<IncrementResponse>('increment_count');
     setCount(newData.count);
   }, [runtime]);
 
@@ -70,5 +70,5 @@ function initStudentView(runtime: XBlockRuntime, container: HTMLDivElement | JQu
   );
 }
 
-// Thanks to rollup's output.name setting, this will become 'initReactXBlock8StudentView' in the global scope
-export default initStudentView;
+// We need to add our init function to the global (window) namespace, without conflicts:
+(globalThis as any).initReactXBlock8StudentView = initStudentView;

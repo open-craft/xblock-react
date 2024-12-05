@@ -6,11 +6,9 @@ import json from '@rollup/plugin-json';
 import { transform as intlTransform } from '@formatjs/ts-transformer';
 
 export default {
-  input: 'src/react_xblock_2.tsx',
   output: {
     dir: '../public/js',
     format: 'iife',
-    name: 'initReactXBlock8StudentView',
   },
   plugins: [
     json(),

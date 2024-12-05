@@ -53,7 +53,7 @@ export class BoundRuntime {
   /** POST data to a JSON handler */
   async postHandler<Data extends Record<string, any> = Record<string, any>>(
     handlerName: string,
-    data: Record<string, any>,
+    data: Record<string, any> = {},
   ): Promise<Data> {
     const response = await this.rawHandler(handlerName, { method: 'POST', body: JSON.stringify(data) });
     return response.json();
@@ -71,6 +71,23 @@ export class BoundRuntime {
       headers.set('Content-Type', 'application/json');
     }
     return fetch(url, { headers, ...otherInit });
+  }
+
+  /**
+   * A helper method to show a "saving..." toast while changes are being saved,
+   * to handle errors, and to close the settings editor modal when complete.
+   * @param savePromise 
+   */
+  async studioSaveAndClose(savePromise: Promise<any>): Promise<void> {
+    this.runtime.notify('save', { state: 'start', element: this.element, message: "Saving..." });
+    try {
+      await savePromise;
+      this.runtime.notify('save', { state: 'end', element: this.element });
+      this.runtime.notify('cancel', {});  // Close the modal
+    } catch (error: unknown) {
+      this.runtime.notify('error', { title: 'Failed to save changes', message: 'An error occurred.' });
+      console.error(error);
+    }
   }
 
   // To access other methods like children(), notify(), etc. use the .runtime property

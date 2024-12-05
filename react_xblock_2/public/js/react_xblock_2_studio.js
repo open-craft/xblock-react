@@ -5529,37 +5529,6 @@
 	 * Copyrights licensed under the New BSD License.
 	 * See the accompanying LICENSE file for terms.
 	 */
-	function areEqual(prevProps, nextProps) {
-	    var values = prevProps.values, otherProps = __rest(prevProps, ["values"]);
-	    var nextValues = nextProps.values, nextOtherProps = __rest(nextProps, ["values"]);
-	    return (shallowEqual(nextValues, values) &&
-	        shallowEqual(otherProps, nextOtherProps));
-	}
-	function FormattedMessage(props) {
-	    var intl = useIntl();
-	    var formatMessage = intl.formatMessage, _a = intl.textComponent, Text = _a === void 0 ? reactExports.Fragment : _a;
-	    var id = props.id, description = props.description, defaultMessage = props.defaultMessage, values = props.values, children = props.children, _b = props.tagName, Component = _b === void 0 ? Text : _b, ignoreTag = props.ignoreTag;
-	    var descriptor = { id: id, description: description, defaultMessage: defaultMessage };
-	    var nodes = formatMessage(descriptor, values, {
-	        ignoreTag: ignoreTag,
-	    });
-	    if (typeof children === 'function') {
-	        return children(Array.isArray(nodes) ? nodes : [nodes]);
-	    }
-	    if (Component) {
-	        return reactExports.createElement(Component, null, reactExports.Children.toArray(nodes));
-	    }
-	    return reactExports.createElement(reactExports.Fragment, null, nodes);
-	}
-	FormattedMessage.displayName = 'FormattedMessage';
-	var MemoizedFormattedMessage = reactExports.memo(FormattedMessage, areEqual);
-	MemoizedFormattedMessage.displayName = 'MemoizedFormattedMessage';
-
-	/*
-	 * Copyright 2015, Yahoo Inc.
-	 * Copyrights licensed under the New BSD License.
-	 * See the accompanying LICENSE file for terms.
-	 */
 	function processIntlConfig(config) {
 	    return {
 	        locale: config.locale,
@@ -5744,17 +5713,18 @@
 	    // editing the messages in the 'lang' folder, and running 'npm run i18n:compile'
 	    fr: frMessages,
 	};
-	const StudentView = ({ runtime, ...props }) => {
-	    const [count, setCount] = React.useState(props.initialCount);
-	    // Handlers:
-	    const increment = React.useCallback(async () => {
-	        const newData = await runtime.postHandler('increment_count');
-	        setCount(newData.count);
-	    }, [runtime]);
-	    // Note: for more sophisticated fetch/cache/mutate behavior, use @tanstack/react-query to manage your data.
-	    return jsxRuntimeExports.jsxs("div", { className: "react_xblock_2_block", children: [jsxRuntimeExports.jsx("h1", { children: "ReactXBlock8" }), jsxRuntimeExports.jsx("p", { children: jsxRuntimeExports.jsx(MemoizedFormattedMessage, { id: '61Tkpq', defaultMessage: [{ type: 6, value: "count", options: { one: { value: [{ type: 0, value: "The button has been clicked " }, { type: 8, value: "bold", children: [{ type: 0, value: "1" }] }, { type: 0, value: " time." }] }, other: { value: [{ type: 0, value: "The button has been clicked " }, { type: 8, value: "bold", children: [{ type: 2, value: "count", style: null }] }, { type: 0, value: " times." }] } }, offset: 0, pluralType: "cardinal" }], values: { count, bold: text => jsxRuntimeExports.jsx("span", { className: "count", children: text }) } }) }), jsxRuntimeExports.jsxs("button", { className: "btn btn-primary", onClick: increment, children: ["+ ", jsxRuntimeExports.jsx(MemoizedFormattedMessage, { id: 'tQLRmz', defaultMessage: [{ type: 0, value: "Increment" }] })] })] });
+	const StudioView = ({ runtime, fields }) => {
+	    const [displayName, setDisplayName] = React.useState(fields.display_name);
+	    const displayNameId = React.useId();
+	    const saveChanges = React.useCallback(async () => {
+	        // Show that we're starting to save changes:
+	        await runtime.studioSaveAndClose(runtime.postHandler('save_authored_data', {
+	            display_name: displayName,
+	        }));
+	    }, [runtime, displayName]);
+	    return jsxRuntimeExports.jsxs("div", { className: "react_xblock_2_block", children: [jsxRuntimeExports.jsx("label", { htmlFor: displayNameId, style: { display: 'block' }, children: "Display name" }), jsxRuntimeExports.jsx("input", { id: displayNameId, type: "text", value: displayName, onChange: (event) => { setDisplayName(event.target.value); } }), jsxRuntimeExports.jsx("br", {}), jsxRuntimeExports.jsx("button", { onClick: saveChanges, children: "Save" })] });
 	};
-	function initStudentView(runtime, container, initData) {
+	function initStudioView(runtime, container, initData) {
 	    if ('jquery' in container) {
 	        // Fix inconsistent parameter typing:
 	        container = container[0];
@@ -5762,9 +5732,9 @@
 	    /** Get the language selected by the user, e.g. 'en' or 'fr' */
 	    const languageCode = document.body.parentElement.lang;
 	    const root = ReactDOM.createRoot(container);
-	    root.render(jsxRuntimeExports.jsx(IntlProvider, { messages: messages[languageCode], locale: languageCode, defaultLocale: "en", children: jsxRuntimeExports.jsx(StudentView, { runtime: new BoundRuntime(runtime, container), initialCount: initData.count }) }));
+	    root.render(jsxRuntimeExports.jsx(IntlProvider, { messages: messages[languageCode], locale: languageCode, defaultLocale: "en", children: jsxRuntimeExports.jsx(StudioView, { runtime: new BoundRuntime(runtime, container), fields: initData.fields }) }));
 	}
 	// We need to add our init function to the global (window) namespace, without conflicts:
-	globalThis.initReactXBlock8StudentView = initStudentView;
+	globalThis.initReactXBlock8StudioView = initStudioView;
 
 })();

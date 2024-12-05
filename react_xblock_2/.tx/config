@@ -2,7 +2,7 @@
 host = https://www.transifex.com
 
 [o:open-edx:p:p:xblocks:r:xblock-react-5]
-file_filter = react_xblock_2/static-src/lang/<lang>.json
-source_file = react_xblock_2/static-src/lang/en.json
+file_filter = react_xblock_2/frontend/lang/<lang>.json
+source_file = react_xblock_2/frontend/lang/en.json
 source_lang = en
 type        = JSON

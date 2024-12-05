@@ -29,25 +29,16 @@ class ReactXBlock8(XBlock):
         default="ReactXBlock8",
     )
 
-    def resource_string(self, path):
-        """
-        Retrieve string contents for the file path
-        """
-        path = os.path.join('static', path)
-        return resource_loader.load_unicode(path)
-
     # TO-DO: change this view to display your data your own way.
     def student_view(self, context=None):
         """
         Create primary view of the ReactXBlock8, shown to students when viewing courses.
         """
         # Create our HTML fragment. The HTML will get replace by React, so
-        # this is mostly to load our React JavaScript bundle and i18n.
+        # this is mostly to load our React JavaScript bundle and CSS.
         frag = Fragment('<p>Loading...</p>')
-        frag.add_css(self.resource_string("css/react_xblock_2.css"))
-        # Add JavaScript:
-        js_entry_point = self.runtime.local_resource_url(self, 'public/js/react_xblock_2.js')
-        frag.add_javascript_url(js_entry_point)
+        frag.add_css_url(self.runtime.local_resource_url(self, 'public/react_xblock_2.css'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/react_xblock_2.js'))
         frag.initialize_js('initReactXBlock8StudentView', {
             # Only fields that we specify here will be available to React:
             "count": self.count,
@@ -60,12 +51,10 @@ class ReactXBlock8(XBlock):
         UI where authors can edit the settings of this block.
         """
         # Create our HTML fragment. The HTML will get replace by React, so
-        # this is mostly to load our React JavaScript bundle and i18n.
+        # this is mostly to load our React JavaScript bundle and CSS.
         frag = Fragment('<p>Loading...</p>')
-        frag.add_css(self.resource_string("css/react_xblock_2.css"))
-        # Add JavaScript:
-        js_entry_point = self.runtime.local_resource_url(self, 'public/js/react_xblock_2_studio.js')
-        frag.add_javascript_url(js_entry_point)
+        frag.add_css_url(self.runtime.local_resource_url(self, 'public/react_xblock_2.css'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/react_xblock_2_studio.js'))
         frag.initialize_js('initReactXBlock8StudioView', {
             # Pass all fields to the studio edit UI. This is safe for authors, but we wouldn't do this for learners
             # (in student_view) because these fields could contain answers etc.

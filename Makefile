@@ -44,10 +44,10 @@ requirements: piptools ## install development environment requirements
 ## Localization targets
 
 extract_translations: ## extract strings to be translated, outputting .po files
-	cd $(PACKAGE_NAME)/static-src && npm run i18n:extract
+	cd $(PACKAGE_NAME)/frontend && npm run i18n:extract
 
 compile_translations: ## compile translation files, outputting .mo files for each supported language
-	cd $(PACKAGE_NAME)/static-src && npm run i18n:compile
+	cd $(PACKAGE_NAME)/frontend && npm run i18n:compile
 
 # detect_changed_source_translations:
 # 	cd $(PACKAGE_NAME) && i18n_tool changed

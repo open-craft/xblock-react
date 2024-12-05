@@ -7,7 +7,7 @@ import { transform as intlTransform } from '@formatjs/ts-transformer';
 
 export default {
   output: {
-    dir: '../public/js',
+    dir: '../public',
     format: 'iife',
   },
   plugins: [

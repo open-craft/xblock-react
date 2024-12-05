@@ -188,6 +188,9 @@ var initReactXBlock8StudentView = (function () {
 
 	var jsxRuntimeExports = requireJsxRuntime();
 
+	var reactExports = requireReact();
+	var React = /*@__PURE__*/getDefaultExportFromCjs(reactExports);
+
 	var reactDom = {exports: {}};
 
 	var reactDom_production_min = {};
@@ -577,9 +580,6 @@ var initReactXBlock8StudentView = (function () {
 
 	var reactDomExports = requireReactDom();
 	var ReactDOM = /*@__PURE__*/getDefaultExportFromCjs(reactDomExports);
-
-	var reactExports = requireReact();
-	var React = /*@__PURE__*/getDefaultExportFromCjs(reactExports);
 
 	var propTypes = {exports: {}};
 
@@ -1489,10 +1489,30 @@ var initReactXBlock8StudentView = (function () {
 	  bsPrefix: 'btn-toolbar'
 	};
 
-	const StudentView = () => {
-	    return jsxRuntimeExports.jsx("div", { children: jsxRuntimeExports.jsx(Button, { children: "Testing" }) });
+	// Neither the XBlock library nor SDK nor edx-platform provides any type
+	// information so we need to include it.
+	//
+	// 🛑 As an XBlock author, you probably should NOT edit this file. 🛑
+	function getAjaxHeaders() {
+	    const csrfToken = document.cookie.split("; ").find((row) => row.startsWith("csrftoken="))?.split("=")[1];
+	    return { 'X-CSRFToken': csrfToken };
+	}
+
+	const StudentView = (props) => {
+	    const [count, setCount] = React.useState(props.initialCount);
+	    // Handlers:
+	    const incrementCountUrl = React.useMemo(() => props.runtime.handlerUrl(props.rootElement, 'increment_count'), []);
+	    const increment = React.useCallback(async () => {
+	        const response = await fetch(incrementCountUrl, {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json', ...getAjaxHeaders() },
+	            body: JSON.stringify({ hello: 'world' }),
+	        });
+	        setCount((await response.json()).count);
+	    }, [incrementCountUrl]);
+	    return jsxRuntimeExports.jsxs("div", { className: "react_xblock_2_block", children: [jsxRuntimeExports.jsxs("p", { children: ["ReactXBlock8: count is now ", jsxRuntimeExports.jsx("span", { className: "count", children: count }), "."] }), jsxRuntimeExports.jsx(Button, { onClick: increment, children: "+ Increment" })] });
 	};
-	function initStudentView(runtime, container) {
+	function initStudentView(runtime, container, initData) {
 	    if ('jquery' in container) {
 	        // Fix inconsistent parameter typing:
 	        container = container[0];
@@ -1501,7 +1521,7 @@ var initReactXBlock8StudentView = (function () {
 	    //   const root = createRoot(container!);
 	    //   root.render(<StudentView runtime={runtime} rootElement={container} />);
 	    // So use the deprecated React 17 API:
-	    ReactDOM.render(jsxRuntimeExports.jsx(StudentView, { runtime: runtime, rootElement: container }), container);
+	    ReactDOM.render(jsxRuntimeExports.jsx(StudentView, { runtime: runtime, rootElement: container, initialCount: initData.count }), container);
 	}
 
 	return initStudentView;

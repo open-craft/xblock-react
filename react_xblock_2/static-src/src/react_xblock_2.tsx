@@ -11,44 +11,43 @@ import ReactDOM from 'react-dom';
 // 🛑 line below "Things that don't have types"), or don't use Paragon.       🛑
 // 🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑
 import { Button } from '@openedx/paragon';
+import { getAjaxHeaders, type JQueryWrappedDiv, type XBlockRuntime } from './xblock-utils';
 
-interface XBlockRuntime {
-  handlerUrl(element: HTMLDivElement, handlerName: string, suffix?: string, query?: string): string;
-  notify(name: string, data: Record<string, any>): void;
-  /** @deprecated XBlocks should not use children */
-  children(element: HTMLDivElement): string[];
-
-  // On Studio runtime only:
-  /** Listen to a Studio event */
-  listenTo?(eventName: string, callback: () => void): void;
-  /** Refresh the view for the xblock represented by the specified element. */
-  refreshXBlock(element: HTMLDivElement): void;
-}
-
-/**
- * Sometimes the XBlock API returns an HTMLElement wrapped in jQuery.
- * We want to discourage use of jQuery, so this is a minimal type definition
- * that just provides enough typing for you to identify and unwrap such
- * variables. See https://youmightnotneedjquery.com/
- */
-interface JQueryWrappedDiv {
-  "0": HTMLDivElement;
-  /** The jQuery version number */
-  jquery: string;
+/** Data passed from our student_view render method when it calls frag.initialize_js() */
+interface InitData {
+  count: number;
 }
 
 interface Props {
   rootElement: HTMLDivElement;
   runtime: XBlockRuntime;
+  initialCount: number;
 }
 
-const StudentView: React.FC<Props> = () => {
-  return <div>
-      <Button>Testing</Button>
+const StudentView: React.FC<Props> = (props) => {
+  const [count, setCount] = React.useState(props.initialCount);
+
+  // Handlers:
+  const incrementCountUrl = React.useMemo(
+    () => props.runtime.handlerUrl(props.rootElement, 'increment_count'),
+    [], // Should never change (neither runtime nor rootElement will ever change)
+  );
+  const increment = React.useCallback(async () => {
+    const response = await fetch(incrementCountUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAjaxHeaders() },
+      body: JSON.stringify({ hello: 'world' }),
+    });
+    setCount((await response.json()).count);
+  }, [incrementCountUrl]);
+
+  return <div className="react_xblock_2_block">
+      <p>ReactXBlock8: count is now <span className="count">{count}</span>.</p>
+      <Button onClick={increment}>+ Increment</Button>
     </div>
 }
 
-function initStudentView(runtime: XBlockRuntime, container: HTMLDivElement | JQueryWrappedDiv) {
+function initStudentView(runtime: XBlockRuntime, container: HTMLDivElement | JQueryWrappedDiv, initData: InitData) {
   if ('jquery' in container) {
     // Fix inconsistent parameter typing:
     container = container[0];
@@ -57,7 +56,7 @@ function initStudentView(runtime: XBlockRuntime, container: HTMLDivElement | JQu
   //   const root = createRoot(container!);
   //   root.render(<StudentView runtime={runtime} rootElement={container} />);
   // So use the deprecated React 17 API:
-  ReactDOM.render(<StudentView runtime={runtime} rootElement={container} />, container);
+  ReactDOM.render(<StudentView runtime={runtime} rootElement={container} initialCount={initData.count} />, container);
 }
 
 // Thanks to rollup's output.name setting, this will become 'initReactXBlock8StudentView' in the global scope

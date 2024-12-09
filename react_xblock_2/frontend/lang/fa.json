@@ -1,0 +1,9 @@
+{
+  "61Tkpq": {
+    "defaultMessage": "{count, plural, one {دکمه <bold>۱</bold> بار کلیک شده است.} other {دکمه <bold>{count, number}</bold> بار کلیک شده است.} }",
+    "description": "جمله‌ای که توصیف می‌کند دکمه چند بار کلیک شده است."
+  },
+  "tQLRmz": {
+    "defaultMessage": "افزایش"
+  }
+}

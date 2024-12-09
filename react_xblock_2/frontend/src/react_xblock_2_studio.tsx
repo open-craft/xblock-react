@@ -6,11 +6,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { IntlProvider, FormattedMessage } from 'react-intl';
 import { BoundRuntime, type JQueryWrappedDiv, type XBlockRuntime } from './xblock-utils';
+import faMessages from '../lang/compiled/fa.json';
 import frMessages from '../lang/compiled/fr.json';
 
 const messages = {
   // List all your supported languages here, after running 'npm run i18n:extract',
   // editing the messages in the 'lang' folder, and running 'npm run i18n:compile'
+  fa: faMessages, // RTL language
   fr: frMessages,
 }
 
